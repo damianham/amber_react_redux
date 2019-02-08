@@ -1,0 +1,143 @@
+class {{ class_name }}Controller < ApplicationController
+  getter {{ name }} = {{ class_name }}.new
+
+  before_action do
+    only [:show, :edit, :update, :destroy] { set_{{ name }} }
+  end
+
+  def index
+{{"    "}}{% if model == "granite" -%}
+    {{ name | pluralize }} = {{ class_name }}.all
+{% else -%}
+    {{ name | pluralize }} = Repo.all({{ class_name }})
+{% endif -%}
+{{"    "}}respond_with do
+      html render_module("index.{{language}}")
+      json {{ name | pluralize }}.to_json
+    end
+  end
+
+  def show
+    respond_with do
+        html render_module("show.{{ language }}")
+        json {{ name }}.to_json
+    end
+  end
+
+  def new
+{% if model == "crecto" -%}
+{{"    "}}changeset = {{ class_name }}.changeset({{ name }})
+{% endif -%}
+{{"    "}}render_module("new.{{ language }}")
+  end
+
+  def create
+{% if model == "granite" -%}
+    {{ name }} = {{ class_name }}.new({{ name }}_params.validate!)
+    if {{ name }}.save
+      respond_with do
+        html ->{ redirect_to action: :index, flash: {"success" => "Created {{ class_name }} successfully."} }
+        json {{ name }}.to_json
+      end
+    else
+      error = {errors: {{ name }}.errors.map { |e| e.to_s }}
+      flash["danger"] = "Could not create {{ class_name }}!"
+      respond_with 400 do
+        html render_module("new.{{ language }}")
+        json error.to_json
+      end
+    end
+  {% else -%}
+    {{ name }}.update_from_hash(params.to_h.select({{ name }}_params.validate!.keys).compact)
+    changeset = Repo.insert({{ name }})
+
+    if changeset.errors.any?
+      error = {errors: changeset.errors}
+      flash["danger"] = "Could not create {{ class_name }}!"
+      respond_with 400 do
+        html render_module("new.{{ language }}")
+        json error.to_json
+      end
+    else
+      respond_with do
+        html ->{ redirect_to "/{{ name | pluralize }}", flash: {"success" => "Created {{ class_name }} successfully."} }
+        json {{ name }}.to_json
+      end
+    end
+{% endif -%}
+  end
+
+  def edit
+{% if model == "crecto" -%}
+{{"      "}}changeset = Repo.update({{ name }})
+{% endif -%}
+{{"      "}}render_module("edit.{{ language }}")
+  end
+
+  def update
+{% if model == "granite" -%}
+{{"    "}}{{ name }}.set_attributes({{ name }}_params.validate!)
+    if {{ name }}.save
+      respond_with do
+        html ->{ redirect_to action: :index, flash: {"success" => "Updated {{ class_name }} successfully."} }
+        json {{ name }}.to_json
+      end
+    else
+      error = {errors: {{ name }}.errors.map { |e| e.to_s }}
+      flash["danger"] = "Could not update {{ class_name }}!"
+      respond_with 400 do
+        html render_module("edit.{{ language }}")
+        json error.to_json
+      end
+    end
+{% else -%}
+{{"    "}}{{ name }}.update_from_hash(params.to_h.select({{ name }}_params.validate!.keys).compact)
+    changeset = Repo.update({{ name }})
+
+    if changeset.errors.any?
+      error = {errors: changeset.errors}
+      flash["danger"] = "Could not update {{ class_name }}!"
+      respond_with 400 do
+        html render_module("edit.{{ language }}")
+        json error.to_json
+      end
+    else
+      respond_with do
+        html ->{ redirect_to action: :index, flash: {"success" => "Updated {{ class_name }} successfully."} }
+        json {{ name }}.to_json
+      end
+    end
+{% endif -%}
+{{"  "}}end
+
+  def destroy
+{% if model == "granite" -%}
+{{"    "}}{{ name }}.destroy
+{% else -%}
+    Repo.delete({{ name }})
+{% endif -%}
+{{"      "}}msg = "{{ class_name }} with ID #{params["id"]} deleted"
+    result = {result: msg}
+    respond_with do
+      html ->{ redirect_to action: :index, flash: {"success" => msg} }
+      json result.to_json
+    end
+
+  end
+
+  private def {{ name }}_params
+    params.validation do
+    {% for field in visible_fields -%}
+    {{"  "}}required(:{{ field.name }}{% if field.type == "reference" %}_id{% endif %}) { |f| !f.nil? }
+    {% endfor -%}
+    end
+  end
+
+  private def set_{{ name }}
+    {% if model == "granite" -%}
+{{"    "}}@{{ name }} = {{ class_name }}.find! params["id"]
+    {% else -%}
+{{"    "}}@{{ name }} = Repo.get!({{ class_name }}, params["id"])
+    {% endif -%}
+  end
+end

@@ -1,0 +1,16 @@
+name: amber_react
+version: 0.1.0
+
+authors:
+   - Damian Hamill <damianham@gmail.com>
+
+description: |
+   Application recipe for a React/Redux SPA with Granite ORM
+
+license: MIT
+
+generator_version: 1
+
+# development_dependencies:
+#   webmock:
+#     github: manastech/webmock.cr
