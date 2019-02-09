@@ -1,6 +1,8 @@
 # amber_react
 Amber web framework application recipe for a React/Redux SPA with Granite ORM
 
+## NOT READY YET - do not use
+
 
 A React/Redux SPA using [React](https://reactjs.org) and [Redux](https://reduxjs.org) library.
 The amber backend serves both html and json.  Also includes a JWT authorisation
