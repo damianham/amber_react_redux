@@ -10,7 +10,7 @@ pipe in src/pipes.  Create a new amber app with this template with these command
 
 
 ```
-amber new mynewapp -r damianham/amber_react
+amber new mynewapp -r damianham/amber_react_redux
 cd mynewapp
 amber g auth User
 amber g scaffold Category title:string user:reference
