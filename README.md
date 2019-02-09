@@ -1,4 +1,4 @@
-# amber_react
+# amber_react_redux
 Amber web framework application recipe for a React/Redux SPA with Granite ORM
 
 ## NOT READY YET - do not use
